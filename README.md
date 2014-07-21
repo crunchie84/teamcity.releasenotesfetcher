@@ -1,4 +1,4 @@
-# teamcity.releasenotesfetcher
+# TeamCity.ReleaseNotesFetcher
 
 CommandLine tool to fetch releasenotes based on teamcity buildId and output it to the console. The app will fetch the information from the teamcity rest api with the given credentials
 
@@ -17,6 +17,7 @@ Usage: TeamCity.ReleaseNotesFetcher options
 
 ## Output (example)
 
+```
 janedoe - 2014-07-21 21:17 - asd123adfa123asfasfd
 this is my commit (oldest)
 
@@ -25,3 +26,4 @@ this is my commit (little newer)
 
 johndoe - 2014-07-21 23:37 - asa123adfa123asfasfd
 this is my commit (newest)
+```
