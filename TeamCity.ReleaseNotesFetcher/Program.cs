@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -45,6 +44,14 @@ namespace TeamCity.ReleaseNotesFetcher
     [ArgPosition(3)]
     [ArgDescription("The build id of which to create releasenotes")]
     public int BuildId { get; set; }
+    
+    /// <summary>
+    /// The github repo to use for the url building to the commit ids 'crunchie84/teamcity.releasenotesfetcher'
+    /// </summary>
+    [ArgRequired]
+    [ArgPosition(4)]
+    [ArgDescription("The github repo to use for the url building to the commit ids")]
+    public string RepositoryName { get; set; }
   }
 
   class Program
@@ -74,9 +81,6 @@ namespace TeamCity.ReleaseNotesFetcher
         authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", authInfo);
 
-        //Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
-        //  "Going to retrieve changes from TeamCity Server {0}", args.TeamCityUrl));
-
         var result = await httpClient.GetAsync(
           string.Format(CultureInfo.InvariantCulture, BuildChangesRestApiUrl, args.TeamCityUrl, args.BuildId));
 
@@ -86,51 +90,51 @@ namespace TeamCity.ReleaseNotesFetcher
           throw new ApplicationException(string.Format(CultureInfo.InvariantCulture,
             "Could not retrieve changes of build {0}:{1}\r\n{2}", args.BuildId, result.StatusCode, body));
         }
-        else
-        {
-          //load it into xdoc
-          var changesXdoc = XDocument.Load(await result.Content.ReadAsStreamAsync());
 
-          var releaseNotes = changesXdoc.Root.Elements("change")
-            .Select(el => int.Parse(el.Attribute("id").Value))
-            .OrderBy(val => val)
-            .Select(async changeId =>
+        //load it into xdoc
+        var changesXdoc = XDocument.Load(await result.Content.ReadAsStreamAsync());
+
+        var releaseNotes = changesXdoc.Root.Elements("change")
+          .Select(el => int.Parse(el.Attribute("id").Value))
+          .OrderBy(val => val)
+          .Select(async changeId =>
+          {
+            var changeResponse =
+              await
+                httpClient.GetAsync(string.Format(CultureInfo.InvariantCulture, ChangeDetailsRestApiUrl,
+                  args.TeamCityUrl, changeId));
+            changeResponse.EnsureSuccessStatusCode();
+
+            var xdoc = XDocument.Load(await changeResponse.Content.ReadAsStreamAsync());
+
+            var username = xdoc.Root.Attribute("username").Value;
+            var commitSha = xdoc.Root.Attribute("version").Value;
+            var comment = xdoc.Root.Element("comment").Value;
+
+            //20140717T160900+0200
+            var buildDate = xdoc.Root.Attribute("date").Value;
+            DateTime? buildDateParsed = null;
+            DateTime theDate;
+            if (DateTime.TryParseExact(buildDate, @"yyyyMMdd\THHmmsszz\0\0", CultureInfo.InvariantCulture,
+              DateTimeStyles.AssumeLocal, out theDate))
             {
-              var changeResponse =
-                await
-                  httpClient.GetAsync(string.Format(CultureInfo.InvariantCulture, ChangeDetailsRestApiUrl,
-                    args.TeamCityUrl, changeId));
-              changeResponse.EnsureSuccessStatusCode();
+              buildDateParsed = theDate;
+            }
 
-              var xdoc = XDocument.Load(await changeResponse.Content.ReadAsStreamAsync());
+            return string.Format(CultureInfo.InvariantCulture,
+              "## [{0} - {1}](https://github.com/{2}/commit/{3}){5}{5}{4}",
+              username, 
+              buildDateParsed == null ? "" : buildDateParsed.Value.ToString("dd-MM-yyyy HH:mm:ss"), 
+              args.RepositoryName,
+              commitSha, 
+              comment,
+              Environment.NewLine);
+          })
+          .ToArray();
 
-              var username = xdoc.Root.Attribute("username").Value;
-              var commitSha = xdoc.Root.Attribute("version").Value;
-              var comment = xdoc.Root.Element("comment").Value;
+        Task.WaitAll(releaseNotes);
 
-              //20140717T160900+0200
-              var buildDate = xdoc.Root.Attribute("date").Value;
-              DateTime? buildDateParsed = null;
-              DateTime theDate;
-              if (DateTime.TryParseExact(buildDate, @"yyyyMMdd\THHmmsszz\0\0", CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeLocal, out theDate))
-              {
-                buildDateParsed = theDate;
-              }
-
-              return string.Format(CultureInfo.InvariantCulture, 
-                "## {0} - {1} - {2}:\r\n\r\n{3}", 
-                username, 
-                buildDateParsed == null ? "" : buildDateParsed.Value.ToString("dd-MM-yyyy HH:mm:ss"), 
-                commitSha, 
-                comment);
-            })
-            .ToArray();
-
-          Task.WaitAll(releaseNotes);
-
-          Console.Write(string.Join(Environment.NewLine, releaseNotes.Select(t => t.Result)));
-        }
+        Console.Write(string.Join(Environment.NewLine + Environment.NewLine, releaseNotes.Select(t => t.Result)));
       }
     }
   }
