@@ -1,6 +1,6 @@
 # TeamCity.ReleaseNotesFetcher
 
-CommandLine tool to fetch releasenotes based on teamcity buildId and output it to the console. The app will fetch the information from the teamcity rest api with the given credentials
+This commandline tool is used to retrieve the pending changes of a given [TeamCity](http://www.jetbrains.com/teamcity/) build in a markdown syntax so we can easily generate releasenotes of those. The application will fetch the information from the [TeamCity REST Api](http://confluence.jetbrains.com/display/TCD8/REST+API) with the given credentials and output the pending changes to the console.
 
 ```
 Usage: TeamCity.ReleaseNotesFetcher options
