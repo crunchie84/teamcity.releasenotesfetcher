@@ -9,7 +9,9 @@ using PowerArgs;
 
 namespace TeamCity.ReleaseNotesFetcher
 {
-  [ArgExample("TeamCity.ReleaseNotesFetcher -t http://teamcity.yourcompany.com -u myusername -p mypassword -b 1234", "How to call this program")]
+  [ArgExample(
+    "TeamCity.ReleaseNotesFetcher -T http://teamcity.yourcompany.com -U mytcusername -P mytcpassword -B 1234 -R crunchie84/teamcity.releasenotesfetcher", 
+    "When executing this program it will go to the passed teamcity server's REST API to retrieve the pending changes of the given build id and return those to the console in markdown format.")]
   public class ProgramArguments
   {
     /// <summary>
