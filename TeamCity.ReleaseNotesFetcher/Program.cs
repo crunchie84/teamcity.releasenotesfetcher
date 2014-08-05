@@ -136,6 +136,8 @@ namespace TeamCity.ReleaseNotesFetcher
 
         Task.WaitAll(releaseNotes);
 
+        if (!releaseNotes.Any())
+            Console.WriteLine("## No changes found for TeamCity build " + args.BuildId);
         Console.Write(string.Join(Environment.NewLine + Environment.NewLine, releaseNotes.Select(t => t.Result)));
       }
     }

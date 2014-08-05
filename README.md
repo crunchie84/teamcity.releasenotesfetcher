@@ -19,16 +19,23 @@ Usage: TeamCity.ReleaseNotesFetcher options
 
 # Output (example)
 
-## [janedoe - 2014-07-21 21:17](https://github.com/crunchie84/teamcity.releasenotesfetcher/commit/c96e213a1c54d5d0ff47b91c7c163928b4b389c4)
+    ## [janedoe - 2014-07-21 21:17](https://github.com/crunchie84/teamcity.releasenotesfetcher/commit/c96e213a1c54d5d0ff47b91c7c163928b4b389c4)
 
-this is my commit (oldest)
-
-
-## [johndoe - 2014-07-21 22:27](https://github.com/crunchie84/teamcity.releasenotesfetcher/commit/c96e213a1c54d5d0ff47b91c7c163928b4b389c4)
-
-this is my commit (little newer)
+    this is my commit (oldest)
 
 
-## [johndoe - 2014-07-21 23:37](https://github.com/crunchie84/teamcity.releasenotesfetcher/commit/c96e213a1c54d5d0ff47b91c7c163928b4b389c4)
+    ## [johndoe - 2014-07-21 22:27](https://github.com/crunchie84/teamcity.releasenotesfetcher/commit/c96e213a1c54d5d0ff47b91c7c163928b4b389c4)
 
-this is my commit (newest)
+    this is my commit (little newer)
+
+
+    ## [johndoe - 2014-07-21 23:37](https://github.com/crunchie84/teamcity.releasenotesfetcher/commit/c96e213a1c54d5d0ff47b91c7c163928b4b389c4)
+
+    this is my commit (newest)
+
+# Output (no changes)
+
+    ## No changes found for TeamCity build 1234
+
+
+https://github.com/crunchie84/teamcity.releasenotesfetcher
