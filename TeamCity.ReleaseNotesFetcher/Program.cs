@@ -10,7 +10,7 @@ using PowerArgs;
 namespace TeamCity.ReleaseNotesFetcher
 {
   [ArgExample(
-    "TeamCity.ReleaseNotesFetcher -T http://teamcity.yourcompany.com -U mytcusername -P mytcpassword -B 1234 -R crunchie84/teamcity.releasenotesfetcher", 
+    "TeamCity.ReleaseNotesFetcher -T http://teamcity.yourcompany.com -U mytcusername -P mytcpassword -B 1234 -R crunchie84/teamcity.releasenotesfetcher -H github", 
     "When executing this program it will go to the passed teamcity server's REST API to retrieve the pending changes of the given build id and return those to the console in markdown format.")]
   public class ProgramArguments
   {
@@ -52,8 +52,14 @@ namespace TeamCity.ReleaseNotesFetcher
     /// </summary>
     [ArgRequired]
     [ArgPosition(4)]
-    [ArgDescription("The github repo to use for the url building to the commit ids")]
+    [ArgDescription("The repo to use for the url building to the commit ids")]
     public string RepositoryName { get; set; }
+
+    [ArgRequired]
+    [ArgPosition(5)]
+    [ArgDescription("Te server where the repository is hosted")]
+    [ArgExample("github, bitbucket","A valid repository host")]
+    public string Host { get; set; }
   }
 
   class Program
@@ -112,6 +118,7 @@ namespace TeamCity.ReleaseNotesFetcher
             var username = xdoc.Root.Attribute("username").Value;
             var commitSha = xdoc.Root.Attribute("version").Value;
             var comment = xdoc.Root.Element("comment").Value;
+            var repositoryHost = args.Host;
 
             //20140717T160900+0200
             var buildDate = xdoc.Root.Attribute("date").Value;
@@ -124,13 +131,14 @@ namespace TeamCity.ReleaseNotesFetcher
             }
 
             return string.Format(CultureInfo.InvariantCulture,
-              "## [{0} - {1}](https://github.com/{2}/commit/{3}){5}{5}{4}",
+              "## [{0} - {1}](https://{6}.com/{2}/commit/{3}){5}{5}{4}",
               username, 
               buildDateParsed == null ? "" : buildDateParsed.Value.ToString("dd-MM-yyyy HH:mm:ss"), 
               args.RepositoryName,
               commitSha, 
               comment,
-              Environment.NewLine);
+              Environment.NewLine, 
+              repositoryHost);
           })
           .ToArray();
 
